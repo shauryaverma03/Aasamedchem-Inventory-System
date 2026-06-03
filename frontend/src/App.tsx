@@ -16,6 +16,7 @@ import { AdminQuotations } from "./pages/admin/AdminQuotations";
 import { AdminAnalytics } from "./pages/admin/AdminAnalytics";
 
 import { SellerDashboard } from "./pages/seller/SellerDashboard";
+import { SellerOrders } from "./pages/seller/SellerOrders";
 
 import { BuyerDashboard } from "./pages/buyer/BuyerDashboard";
 import { BuyerProducts } from "./pages/buyer/BuyerProducts";
@@ -74,7 +75,7 @@ function App() {
               <Route index element={<SellerDashboard />} />
               <Route path="products" element={<ProductsPage />} />
               <Route path="inventory" element={<AdminInventory />} />
-              <Route path="orders" element={<AdminOrders />} />
+              <Route path="orders" element={<SellerOrders />} />
             </Route>
 
             {/* Buyer Routes */}
