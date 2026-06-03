@@ -9,11 +9,11 @@ interface BadgeProps {
 
 export const Badge = ({ children, className, variant = "default" }: BadgeProps) => {
   const variants = {
-    default: "bg-gray-100 text-gray-700",
-    success: "bg-green-100 text-green-800",
-    danger: "bg-red-100 text-red-700",
-    warning: "bg-yellow-100 text-yellow-800",
-    info: "bg-blue-100 text-blue-800",
+    default: "bg-gray-100 text-gray-700 border border-gray-200",
+    success: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    danger: "bg-red-50 text-red-700 border border-red-200",
+    warning: "bg-amber-50 text-amber-700 border border-amber-200",
+    info: "bg-blue-50 text-blue-700 border border-blue-200",
   };
 
   return (
@@ -24,12 +24,18 @@ export const Badge = ({ children, className, variant = "default" }: BadgeProps) 
 };
 
 export const StatusBadge = ({ status }: { status: string }) => {
-  const variants: Record<string, BadgeProps["variant"]> = {
-    PENDING: "warning",
-    APPROVED: "success",
-    REJECTED: "danger",
-    COMPLETED: "info",
-    EXPIRED: "default",
+  const config: Record<string, { variant: BadgeProps["variant"]; dot: string }> = {
+    PENDING:   { variant: "warning", dot: "bg-amber-400" },
+    APPROVED:  { variant: "success", dot: "bg-emerald-400" },
+    REJECTED:  { variant: "danger",  dot: "bg-red-400" },
+    COMPLETED: { variant: "info",    dot: "bg-blue-400" },
+    EXPIRED:   { variant: "default", dot: "bg-gray-400" },
   };
-  return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+  const c = config[status] || { variant: "default" as BadgeProps["variant"], dot: "bg-gray-400" };
+  return (
+    <Badge variant={c.variant}>
+      <span className={`w-1.5 h-1.5 rounded-full ${c.dot} mr-1.5 inline-block`} />
+      {status}
+    </Badge>
+  );
 };
