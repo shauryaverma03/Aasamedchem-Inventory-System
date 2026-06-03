@@ -10,7 +10,7 @@ import {
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer,
+  ResponsiveContainer, type PieLabelRenderProps,
 } from "recharts";
 
 // ── Custom Tooltip ────────────────────────────────────────────────────────────
@@ -35,19 +35,17 @@ const ChartTooltip = ({ active, payload, label }: {
 };
 
 // ── Pie label ─────────────────────────────────────────────────────────────────
-const PieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: {
-  cx: number; cy: number; midAngle: number;
-  innerRadius: number; outerRadius: number;
-  percent: number; name: string;
-}) => {
+const PieLabel = (props: PieLabelRenderProps) => {
+  const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
+  if (!cx || !cy || !midAngle || !innerRadius || !outerRadius || !percent) return null;
   const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  if (percent < 0.06) return null;
+  const radius = Number(innerRadius) + (Number(outerRadius) - Number(innerRadius)) * 0.55;
+  const x = Number(cx) + radius * Math.cos(-Number(midAngle) * RADIAN);
+  const y = Number(cy) + radius * Math.sin(-Number(midAngle) * RADIAN);
+  if (Number(percent) < 0.06) return null;
   return (
     <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={700}>
-      {`${(percent * 100).toFixed(0)}%`}
+      {`${(Number(percent) * 100).toFixed(0)}%`}
     </text>
   );
 };
@@ -243,7 +241,7 @@ export const AdminAnalytics = () => {
                     outerRadius={75}
                     dataKey="value"
                     labelLine={false}
-                    label={PieLabel as React.FC}
+                    label={PieLabel}
                   >
                     {orderPieData.map((entry: { name: string }, i: number) => (
                       <Cell key={i} fill={STATUS_COLORS[entry.name] || "#9CA3AF"} />
