@@ -25,14 +25,20 @@ export const ProductsPage = () => {
   const canManage = user?.role === "ADMIN" || user?.role === "SELLER";
 
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
 
+  const { data: catData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => productApi.getCategories().then((r) => r.data),
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ["products", search, page],
-    queryFn: () => productApi.getAll({ search: search || undefined, page, limit: 15 }).then((r) => r.data),
+    queryKey: ["products", search, categoryFilter, page],
+    queryFn: () => productApi.getAll({ search: search || undefined, category: categoryFilter || undefined, page, limit: 15 }).then((r) => r.data),
   });
 
   const createMutation = useMutation({
@@ -78,6 +84,7 @@ export const ProductsPage = () => {
 
   const products: Product[] = data?.products || [];
   const pagination = data?.pagination;
+  const categories: string[] = catData?.categories || [];
 
   return (
     <div className="space-y-6">
@@ -95,8 +102,8 @@ export const ProductsPage = () => {
         )}
       </div>
 
-      <div className="flex gap-3">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-48">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-secondary/40"
@@ -105,6 +112,14 @@ export const ProductsPage = () => {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
+        <select
+          className="px-4 py-2.5 text-sm rounded-xl border border-border bg-white focus:outline-none focus:ring-2 focus:ring-secondary/40 min-w-40"
+          value={categoryFilter}
+          onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+        >
+          <option value="">All Categories</option>
+          {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
       </div>
 
       <Card className="p-0">

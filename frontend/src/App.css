@@ -1,8 +1,4 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
+/* App.css cleared - all styles in index.css and Tailwind */
   background: var(--accent-bg);
   border: 2px solid transparent;
   transition: border-color 0.3s;
