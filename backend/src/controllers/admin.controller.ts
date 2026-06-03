@@ -47,6 +47,8 @@ export const getAnalytics = async (_req: AuthRequest, res: Response): Promise<vo
       ordersByStatus,
       recentOrders,
       topProducts,
+      recentOrdersRaw,
+      quotationsByStatus,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.product.count({ where: { isActive: true } }),
@@ -68,6 +70,14 @@ export const getAnalytics = async (_req: AuthRequest, res: Response): Promise<vo
         orderBy: { _count: { productId: "desc" } },
         take: 5,
       }),
+      // Last 14 days of orders for the trend chart
+      prisma.order.findMany({
+        where: { createdAt: { gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) } },
+        select: { createdAt: true, totalAmount: true, status: true },
+        orderBy: { createdAt: "asc" },
+      }),
+      // Quotations by status
+      prisma.quotation.groupBy({ by: ["status"], _count: true }),
     ]);
 
     const productIds = topProducts.map((p) => p.productId);
@@ -81,11 +91,29 @@ export const getAnalytics = async (_req: AuthRequest, res: Response): Promise<vo
       product: products.find((p) => p.id === tp.productId),
     }));
 
+    // Build daily trend: group by date string
+    const dailyMap: Record<string, { orders: number; revenue: number }> = {};
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      dailyMap[key] = { orders: 0, revenue: 0 };
+    }
+    for (const o of recentOrdersRaw) {
+      const key = new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      if (dailyMap[key]) {
+        dailyMap[key].orders += 1;
+        dailyMap[key].revenue += Number(o.totalAmount);
+      }
+    }
+    const orderTrend = Object.entries(dailyMap).map(([date, v]) => ({ date, ...v }));
+
     res.json({
       overview: { totalUsers, totalProducts, totalOrders, totalQuotations },
       ordersByStatus,
+      quotationsByStatus,
       recentOrders,
       topProducts: topProductsWithNames,
+      orderTrend,
     });
   } catch (err) {
     console.error(err);
